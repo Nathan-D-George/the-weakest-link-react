@@ -95,7 +95,7 @@ export default function MenuScreen({ players, setPlayers, questions, setQuestion
 
   return (
     <div className="screen" style={{ justifyContent: 'flex-start', paddingTop: '4rem' }}>
-      <div className="title-logo">The Liability</div>
+      <div className="title-logo">The Weakest Link</div>
       <div className="subtitle">Are you the weakest link?</div>
       <div className="chain-bar" style={{ maxWidth: '500px', margin: '1.5rem 0' }} />
 
