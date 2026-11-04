@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import MenuScreen from './components/MenuScreen'
+import Menu from './components/Menu'
 import GameScreen from './components/GameScreen'
 import EliminationScreen from './components/EliminationScreen'
 import FinalRoundIntro from './components/FinalRoundIntro'
@@ -20,10 +20,10 @@ function createInitialGameState(players, questions, roundTime, settings) {
     players: [...players],
     eliminated: [],
     round: 1,
-    currentPlayerIdx: 0,
+    currentPlayerIndex: 0,
     bankTotal: 0,
     tempBank: 0,
-    chainIdx: 0,
+    chainIndex: 0,
     questionQueue: ordered,
     totalQuestions: ordered.length,
     questionIndex: 0,
@@ -71,7 +71,7 @@ export default function App() {
   return (
     <>
       {screen === SCREENS.MENU && (
-        <MenuScreen
+        <Menu
           players={players} setPlayers={setPlayers}
           questions={questions} setQuestions={setQuestions}
           roundTime={roundTime} setRoundTime={setRoundTime}

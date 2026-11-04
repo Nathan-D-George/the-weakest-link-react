@@ -30,10 +30,10 @@ export default function EliminationScreen({ gameState, setGameState, onContinue,
       players: newPlayers,
       eliminated: newElim,
       round: prev.round + 1,
-      currentPlayerIdx: 0,
+      currentPlayerIndex: 0,
       questionsThisRound: 0,
       tempBank: 0,
-      chainIdx: 0,
+      chainIndex: 0,
       timeLeft: roundTime,
     }));
 

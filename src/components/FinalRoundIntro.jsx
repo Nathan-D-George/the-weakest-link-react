@@ -25,7 +25,7 @@ export default function FinalRoundIntro({ gameState, setGameState, onContinue, o
         players: orderedPlayers,
         // Per-player question tracking for penalty shootout
         scores: { [orderedPlayers[0]]: [], [orderedPlayers[1]]: [] },
-        currentPlayerIdx: 0,
+        currentPlayerIndex: 0,
         set: 1,          // current set (1–5 = standard, 6+ = sudden death)
         phase: 'playing', // 'playing' | 'set_result' | 'done'
         winner: null,

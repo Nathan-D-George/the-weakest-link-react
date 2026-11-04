@@ -13,12 +13,12 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
   const [setResult, setSetResult] = useState(null)         // result summary after each set
   const [showOptions, setShowOptions] = useState(false)
 
-  const questionsExhausted = gs.qIdx >= gs.totalQuestions
-  const currentQ = questionsExhausted ? null : gs.questionQueue[gs.qIdx]
+  const questionsExhausted = gs.questionIndex >= gs.totalQuestions
+  const currentQ = questionsExhausted ? null : gs.questionQueue[gs.questionIndex]
 
   // Who is currently answering
-  const currentPlayer = fr.players[fr.currentPlayerIdx]
-  const otherPlayer   = fr.players[1 - fr.currentPlayerIdx]
+  const currentPlayer = fr.players[fr.currentPlayerIndex]
+  const otherPlayer   = fr.players[1 - fr.currentPlayerIndex]
 
   // Scores in THIS final round
   const p0scores = fr.scores[fr.players[0]]  // array of true/false per set
@@ -34,7 +34,7 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
     setRevealAnswer(false)
     setAnswered(null)
     setSetResult(null)
-  }, [gs.qIdx, fr.currentPlayerIdx, fr.set])
+  }, [gs.questionIndex, fr.currentPlayerIndex, fr.set])
 
   const handleAnswer = (correct) => {
     clearInterval(timerRef.current)
@@ -60,7 +60,7 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
 
     setGameState(prev => ({
       ...prev,
-      qIdx: prev.qIdx + 1,
+      questionIndex: prev.questionIndex + 1,
       history: newHistory,
       finalRound: { ...prev.finalRound, scores: newScores },
     }))
@@ -131,7 +131,7 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
         finalRound: {
           ...prev.finalRound,
           set: nextSet,
-          currentPlayerIdx: 0,  // player 0 always starts each set
+          currentPlayerIndex: 0,  // player 0 always starts each set
         },
       }))
       return
@@ -142,7 +142,7 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
       ...prev,
       finalRound: {
         ...prev.finalRound,
-        currentPlayerIdx: 1 - prev.finalRound.currentPlayerIdx,
+        currentPlayerIndex: 1 - prev.finalRound.currentPlayerIndex,
       },
     }))
   }
@@ -192,7 +192,7 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
             const pname = fr.players[i]
             const pscores = fr.scores[pname]
             const pcorrect = pscores.filter(Boolean).length
-            const isCurrent = fr.currentPlayerIdx === i
+            const isCurrent = fr.currentPlayerIndex === i
             return (
               <div key={pname} style={{
                 background: isCurrent ? 'rgba(26,74,204,0.15)' : 'var(--surface)',
@@ -233,7 +233,7 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
           <>
             <div className="q-box">
               <div style={{ fontSize: '.7rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '.8rem' }}>
-                <span style={{ color: 'var(--gold)' }}>⚡ Final</span> &nbsp;·&nbsp; {gs.qIdx + 1} of {gs.totalQuestions} total
+                <span style={{ color: 'var(--gold)' }}>⚡ Final</span> &nbsp;·&nbsp; {gs.questionIndex + 1} of {gs.totalQuestions} total
               </div>
               <div className="q-text">{currentQ.question}</div>
               {showAnswerInBox && (
@@ -261,13 +261,13 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
           <>
             <div className="q-box" style={{ marginTop: '1rem' }}>
               <div style={{ fontSize: '.7rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '.8rem' }}>
-                <span style={{ color: 'var(--gold)' }}>⚡ Final</span> &nbsp;·&nbsp; {gs.qIdx} of {gs.totalQuestions} total
+                <span style={{ color: 'var(--gold)' }}>⚡ Final</span> &nbsp;·&nbsp; {gs.questionIndex} of {gs.totalQuestions} total
               </div>
-              <div className="q-text" style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>{gs.questionQueue[gs.qIdx - 1]?.question}</div>
+              <div className="q-text" style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>{gs.questionQueue[gs.questionIndex - 1]?.question}</div>
               {(settings.autoDisplayAnswer || revealAnswer) && (
                 <>
                   <div style={{ height: '1px', background: 'var(--border)', margin: '.8rem 0' }} />
-                  <div className="a-text">{gs.questionQueue[gs.qIdx - 1]?.answer}</div>
+                  <div className="a-text">{gs.questionQueue[gs.questionIndex - 1]?.answer}</div>
                 </>
               )}
             </div>
