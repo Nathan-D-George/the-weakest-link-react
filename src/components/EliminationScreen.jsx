@@ -2,21 +2,20 @@ import React, { useState } from 'react'
 import OptionsModal from './OptionsModal'
 
 export default function EliminationScreen({ gameState, setGameState, onContinue, onGameOver, onQuit, roundTime }) {
-  const gs = gameState
   const [selected, setSelected] = useState(null);
   const [confirm, setConfirm] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
 
   const playerStats = (player) => {
-    const playerHistory = gs.history.filter(history => history.player === player)
-    return { correct: playerHistory.filter(history => history.correct).length, total: playerHistory.length }
+    const playerHistory = gameState.history.filter(history => history.player === player);
+    return { correct: playerHistory.filter(history => history.correct).length, total: playerHistory.length };
   }
 
-  const sortedPlayers = [...gs.players].sort((a, b) => playerStats(b).correct - playerStats(a).correct)
+  const sortedPlayers = [...gameState.players].sort((a, b) => playerStats(b).correct - playerStats(a).correct);
 
   const eliminate = () => {
-    const newPlayers = gs.players.filter(p => p !== selected)
-    const newElim = [...gs.eliminated, selected]
+    const newPlayers = gameState.players.filter(p => p !== selected);
+    const newElim = [...gameState.eliminated, selected];
 
     // Only 1 player left → game over
     if (newPlayers.length <= 1) {
@@ -47,10 +46,10 @@ export default function EliminationScreen({ gameState, setGameState, onContinue,
 
       <div style={{ maxWidth: '600px', width: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div className="title-logo" style={{ fontSize: '2.5rem' }}>End of Round {gs.round}</div>
+          <div className="title-logo" style={{ fontSize: '2.5rem' }}>End of Round {gameState.round}</div>
           <div className="chain-bar" />
           <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--gold)', marginTop: '.5rem' }}>
-            Total Banked: {gs.bankTotal}
+            Total Banked: {gameState.bankTotal}
           </div>
           <div style={{ color: 'var(--text-muted)', fontSize: '.85rem', marginTop: '.3rem' }}>
             Unbanked chain points have been lost.

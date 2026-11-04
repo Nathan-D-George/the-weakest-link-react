@@ -2,21 +2,20 @@ import React, { useState } from 'react'
 import OptionsModal from './OptionsModal'
 
 export default function FinalRoundIntro({ gameState, setGameState, onContinue, onQuit }) {
-  const gs = gameState
-  const [selected, setSelected] = useState(null)
-  const [showOptions, setShowOptions] = useState(false)
+  const [selected, setSelected] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
 
-  const [p1, p2] = gs.players
+  const [p1, p2] = gameState.players;
 
-  const playerStats = (p) => {
-    const ph = gs.history.filter(h => h.player === p)
-    return { correct: ph.filter(h => h.correct).length, total: ph.length }
+  const playerStats = (player) => {
+    const playerHistory = gameState.history.filter(history => history.player === player);
+    return { correct: playerHistory.filter(history => history.correct).length, total: playerHistory.length };
   }
 
   const handleConfirm = () => {
-    if (!selected) return
+    if (!selected) return;
     // Put the selected player first in the final round order
-    const orderedPlayers = selected === p1 ? [p1, p2] : [p2, p1]
+    const orderedPlayers = selected === p1 ? [p1, p2] : [p2, p1];
     setGameState(prev => ({
       ...prev,
       players: orderedPlayers,
@@ -26,16 +25,16 @@ export default function FinalRoundIntro({ gameState, setGameState, onContinue, o
         // Per-player question tracking for penalty shootout
         scores: { [orderedPlayers[0]]: [], [orderedPlayers[1]]: [] },
         currentPlayerIndex: 0,
-        set: 1,          // current set (1–5 = standard, 6+ = sudden death)
-        phase: 'playing', // 'playing' | 'set_result' | 'done'
+        set: 1,                                                     // current set (1–5 = standard, 6+ = sudden death)
+        phase: 'playing',                                           // 'playing' | 'set_result' | 'done'
         winner: null,
       },
-    }))
-    onContinue()
+    }));
+    onContinue();
   }
 
-  const st1 = playerStats(p1)
-  const st2 = playerStats(p2)
+  const stats1 = playerStats(p1);
+  const stats2 = playerStats(p2);
 
   return (
     <div className="screen">
@@ -56,7 +55,7 @@ export default function FinalRoundIntro({ gameState, setGameState, onContinue, o
         {/* Player stats */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
           {[p1, p2].map((p, i) => {
-            const st = i === 0 ? st1 : st2
+            const st = i === 0 ? stats1 : stats2
             return (
               <div key={p} className="card" style={{ textAlign: 'center' }}>
                 <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '.3rem' }}>{p}</div>
