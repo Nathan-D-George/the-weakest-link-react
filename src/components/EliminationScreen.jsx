@@ -3,13 +3,13 @@ import OptionsModal from './OptionsModal'
 
 export default function EliminationScreen({ gameState, setGameState, onContinue, onGameOver, onQuit, roundTime }) {
   const gs = gameState
-  const [selected, setSelected] = useState(null)
-  const [confirm, setConfirm] = useState(false)
-  const [showOptions, setShowOptions] = useState(false)
+  const [selected, setSelected] = useState(null);
+  const [confirm, setConfirm] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
 
-  const playerStats = (p) => {
-    const ph = gs.history.filter(h => h.player === p)
-    return { correct: ph.filter(h => h.correct).length, total: ph.length }
+  const playerStats = (player) => {
+    const playerHistory = gs.history.filter(history => history.player === player)
+    return { correct: playerHistory.filter(history => history.correct).length, total: playerHistory.length }
   }
 
   const sortedPlayers = [...gs.players].sort((a, b) => playerStats(b).correct - playerStats(a).correct)
@@ -20,9 +20,9 @@ export default function EliminationScreen({ gameState, setGameState, onContinue,
 
     // Only 1 player left → game over
     if (newPlayers.length <= 1) {
-      setGameState(prev => ({ ...prev, players: newPlayers, eliminated: newElim }))
-      onGameOver()
-      return
+      setGameState(prev => ({ ...prev, players: newPlayers, eliminated: newElim }));
+      onGameOver();
+      return;
     }
 
     setGameState(prev => ({
@@ -35,9 +35,9 @@ export default function EliminationScreen({ gameState, setGameState, onContinue,
       tempBank: 0,
       chainIdx: 0,
       timeLeft: roundTime,
-    }))
-    // onContinue routes to FinalRoundIntro if 2 players remain, or back to GameScreen
-    onContinue()
+    }));
+
+    onContinue();
   }
 
   return (

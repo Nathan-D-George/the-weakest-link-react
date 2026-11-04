@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import * as XLSX from 'xlsx'
+import { QUESTION_ORDER } from '../types'
 
 export default function MenuScreen({ players, setPlayers, questions, setQuestions, roundTime, setRoundTime, settings, setSettings, onStart }) {
   const [nameInput, setNameInput] = useState('')
@@ -177,7 +178,7 @@ export default function MenuScreen({ players, setPlayers, questions, setQuestion
           <ToggleGroup
             label="Question Order"
             value={settings.questionOrder}
-            options={[{ label: '🔀 Random', value: 'random' }, { label: '📋 Chronological', value: 'chronological' }]}
+            options={[{ label: '🔀 Random', value: QUESTION_ORDER.RANDOM }, { label: '📋 Chronological', value: QUESTION_ORDER.CHRONOLOGICAL }]}
             onChange={v => setSetting('questionOrder', v)}
           />
           <ToggleGroup
