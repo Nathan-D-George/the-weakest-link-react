@@ -2,77 +2,86 @@ import React, { useState } from 'react'
 import * as XLSX from 'xlsx'
 import { QUESTION_ORDER } from '../types'
 
-export default function MenuScreen({ players, setPlayers, questions, setQuestions, roundTime, setRoundTime, settings, setSettings, onStart }) {
-  const [nameInput, setNameInput] = useState('')
-  const [fileError, setFileError] = useState('')
+export default function Menu({ players, setPlayers, questions, setQuestions, roundTime, setRoundTime, settings, setSettings, onStart }) {
+  const [nameInput, setNameInput] = useState('');
+  const [fileError, setFileError] = useState('');
 
-  const canStart = players.length >= 2 && questions.length > 0
+  const canStart = players.length >= 2 && questions.length > 0;
 
   const addPlayer = () => {
-    const n = nameInput.trim()
-    if (!n || players.includes(n)) return
-    setPlayers(p => [...p, n])
-    setNameInput('')
+    const name = nameInput.trim();
+    if (!name || players.includes(name)) return;
+    setPlayers(player => [...player, name]);
+    setNameInput('');
   }
 
-  const removePlayer = (p) => setPlayers(ps => ps.filter(x => x !== p))
+  const removePlayer = (player) => setPlayers(playerList => playerList.filter(x => x !== player));
 
   const parseCSV = (text) => {
-    const lines = text.trim().split(/\r?\n/)
-    if (lines.length < 2) return []
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) return [];
     return lines
       .slice(1)
       .map(line => {
-        const cols = []
-        let cur = '', inQuote = false
+        const cols = [];
+        let currentString = '', inQuote = false;
         for (let i = 0; i < line.length; i++) {
-          const ch = line[i]
-          if (ch === '"') { inQuote = !inQuote }
-          else if (ch === ',' && !inQuote) { cols.push(cur.trim()); cur = '' }
-          else { cur += ch }
+          const char = line[i];
+          if (char === '"') {
+            inQuote = !inQuote;
+          }
+          else if (char === ',' && !inQuote) {
+            cols.push(currentString.trim()); currentString = '';
+          }
+          else {
+            currentString += char;
+          }
         }
-        cols.push(cur.trim())
-        return cols
+        cols.push(currentString.trim());
+        return cols;
       })
       .filter(cols => cols[0] && cols[1])
-      .map(cols => ({ question: cols[0].replace(/^"|"$/g, ''), answer: cols[1].replace(/^"|"$/g, '') }))
+      .map(cols => ({ question: cols[0].replace(/^"|"$/g, ''), answer: cols[1].replace(/^"|"$/g, '') }));
   }
 
   const handleFile = (e) => {
-    setFileError('')
-    const f = e.target.files[0]
-    if (!f) return
-    const isCSV = f.name.toLowerCase().endsWith('.csv')
-    const reader = new FileReader()
-    reader.onload = (ev) => {
+    setFileError('');
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const isCSV = file.name.toLowerCase().endsWith('.csv');
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
       try {
-        let rows
+        let rows;
+
         if (isCSV) {
-          rows = parseCSV(ev.target.result)
+          rows = parseCSV(event.target.result);
         } else {
-          const wb = XLSX.read(ev.target.result, { type: 'binary' })
-          const ws = wb.Sheets[wb.SheetNames[0]]
-          const data = XLSX.utils.sheet_to_json(ws, { header: 1 })
+          const workBook = XLSX.read(event.target.result, { type: 'binary' });
+          const workSheet = workBook.Sheets[workBook.SheetNames[0]];
+          const data = XLSX.utils.sheet_to_json(workSheet, { header: 1 });
           rows = data
             .slice(1)
-            .filter(r => r[0] && r[1])
-            .map(r => ({ question: String(r[0]), answer: String(r[1]) }))
+            .filter(row => row[0] && row[1])
+            .map(row => ({ question: String(row[0]), answer: String(row[1]) }));
         }
         if (rows.length === 0) {
-          setFileError('No valid rows found. Ensure columns are "question" and "answer".')
-          return
+          setFileError('No valid rows found. Ensure columns are "question" and "answer".');
+          return;
         }
-        setQuestions(rows)
+        setQuestions(rows);
       } catch {
-        setFileError('Could not read file.')
+        setFileError('Could not read file.');
       }
     }
-    if (isCSV) reader.readAsText(f)
-    else reader.readAsBinaryString(f)
-    e.target.value = ''
+    if (isCSV) reader.readAsText(file);
+    else reader.readAsBinaryString(file);
+    e.target.value = '';
   }
 
-  const setSetting = (key, value) => setSettings(prev => ({ ...prev, [key]: value }))
+  const setSetting = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
 
   const ToggleGroup = ({ label, value, options, onChange }) => (
     <div style={{ marginBottom: '.2rem' }}>
@@ -80,19 +89,19 @@ export default function MenuScreen({ players, setPlayers, questions, setQuestion
         {label}
       </div>
       <div style={{ display: 'flex', gap: '.4rem' }}>
-        {options.map(opt => (
+        {options.map(option => (
           <button
-            key={opt.value}
-            className={`btn btn-sm ${value === opt.value ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => onChange(opt.value)}
+            key={option.value}
+            className={`btn btn-sm ${value === option.value ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => onChange(option.value)}
             style={{ flex: 1 }}
           >
-            {opt.label}
+            {option.label}
           </button>
         ))}
       </div>
     </div>
-  )
+  );
 
   return (
     <div className="screen" style={{ justifyContent: 'flex-start', paddingTop: '4rem' }}>
@@ -160,7 +169,7 @@ export default function MenuScreen({ players, setPlayers, questions, setQuestion
             <input
               type="range" min="30" max="300" step="10"
               value={roundTime}
-              onChange={e => setRoundTime(Number(e.target.value))}
+              onChange={event => setRoundTime(Number(event.target.value))}
               style={{ flex: 1 }}
             />
             <span style={{ fontSize: '1.2rem', fontWeight: 700, minWidth: '60px', textAlign: 'right' }}>{roundTime}s</span>
@@ -179,13 +188,13 @@ export default function MenuScreen({ players, setPlayers, questions, setQuestion
             label="Question Order"
             value={settings.questionOrder}
             options={[{ label: '🔀 Random', value: QUESTION_ORDER.RANDOM }, { label: '📋 Chronological', value: QUESTION_ORDER.CHRONOLOGICAL }]}
-            onChange={v => setSetting('questionOrder', v)}
+            onChange={value => setSetting('questionOrder', value)}
           />
           <ToggleGroup
             label="Display Answers"
             value={settings.autoDisplayAnswer ? 'auto' : 'manual'}
             options={[{ label: '👁 Always', value: 'auto' }, { label: '🖱 On Click', value: 'manual' }]}
-            onChange={v => setSetting('autoDisplayAnswer', v === 'auto')}
+            onChange={value => setSetting('autoDisplayAnswer', value === 'auto')}
           />
         </div>
 
@@ -208,5 +217,5 @@ export default function MenuScreen({ players, setPlayers, questions, setQuestion
         </div>
       </div>
     </div>
-  )
+  );
 }
