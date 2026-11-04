@@ -1,25 +1,24 @@
 import React, { useState } from 'react'
 
 export default function GameOverScreen({ gameState, onMenu }) {
-  const gs = gameState
   const [tab, setTab] = useState('summary')
 
-  const fr = gs.finalRound
-  const winners = gs.players.length > 0 ? gs.players : [gs.eliminated[gs.eliminated.length - 1] || 'No one']
-  const multiWin = winners.length > 1
-  const allPlayers = [...gs.players, ...[...gs.eliminated].reverse()]
+  const finalRound = gameState.finalRound;
+  const winners = gameState.players.length > 0 ? gameState.players : [gameState.eliminated[gameState.eliminated.length - 1] || 'No one'];
+  const multiWin = winners.length > 1;
+  const allPlayers = [...gameState.players, ...[...gameState.eliminated].reverse()];
 
-  const playerStats = (p) => {
-    const ph = gs.history.filter(h => h.player === p)
-    const correct = ph.filter(h => h.correct).length
-    return { correct, total: ph.length, pct: ph.length ? Math.round(correct / ph.length * 100) : 0 }
+  const playerStats = (player) => {
+    const playerHistory = gameState.history.filter(history => history.player === player);
+    const correct = playerHistory.filter(history => history.correct).length;
+    return { correct, total: playerHistory.length, pct: playerHistory.length ? Math.round(correct / playerHistory.length * 100) : 0 };
   }
 
   // Final round score breakdown if applicable
-  const finalScores = fr ? {
-    [fr.players[0]]: fr.scores[fr.players[0]].filter(Boolean).length,
-    [fr.players[1]]: fr.scores[fr.players[1]].filter(Boolean).length,
-  } : null
+  const finalScores = finalRound ? {
+    [finalRound.players[0]]: finalRound.scores[finalRound.players[0]].filter(Boolean).length,
+    [finalRound.players[1]]: finalRound.scores[finalRound.players[1]].filter(Boolean).length,
+  } : null;
 
   return (
     <div className="screen" style={{ justifyContent: 'flex-start', paddingTop: '3rem' }}>
@@ -28,7 +27,7 @@ export default function GameOverScreen({ gameState, onMenu }) {
           <div className="title-logo">Game Over</div>
           <div className="chain-bar" />
 
-          {gs.questionsExhausted && (
+          {gameState.questionsExhausted && (
             <div style={{ background: 'rgba(26,74,204,0.12)', border: '1px solid var(--blue-dim)', borderRadius: '3px', padding: '.6rem 1rem', marginBottom: '1rem', color: 'var(--blue-bright)', fontSize: '.85rem' }}>
               All questions were used — game ended early.
             </div>
@@ -40,8 +39,8 @@ export default function GameOverScreen({ gameState, onMenu }) {
 
           {multiWin ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', justifyContent: 'center', marginTop: '.8rem' }}>
-              {winners.map(w => (
-                <span key={w} style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--gold)', background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.3)', borderRadius: '4px', padding: '.3rem .9rem' }}>{w}</span>
+              {winners.map(winner => (
+                <span key={winner} style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--gold)', background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.3)', borderRadius: '4px', padding: '.3rem .9rem' }}>{winner}</span>
               ))}
             </div>
           ) : (
@@ -49,7 +48,7 @@ export default function GameOverScreen({ gameState, onMenu }) {
           )}
 
           <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginTop: '.8rem' }}>
-            Total Banked: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{gs.bankTotal}</span>
+            Total Banked: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{gameState.bankTotal}</span>
           </div>
 
           {/* Final round scorecard */}
@@ -58,20 +57,20 @@ export default function GameOverScreen({ gameState, onMenu }) {
               <div style={{ fontSize: '.65rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '.7rem' }}>⚡ Final Round</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '.8rem', alignItems: 'center' }}>
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700 }}>{fr.players[0]}</div>
+                  <div style={{ fontWeight: 700 }}>{finalRound.players[0]}</div>
                   <div style={{ fontSize: '.8rem', display: 'flex', gap: '3px', marginTop: '.3rem' }}>
-                    {fr.scores[fr.players[0]].map((r, i) => (
+                    {finalRound.scores[finalRound.players[0]].map((r, i) => (
                       <div key={i} style={{ width: '12px', height: '12px', borderRadius: '50%', background: r ? 'var(--green)' : 'var(--red)' }} />
                     ))}
                   </div>
                 </div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-muted)' }}>
-                  {finalScores[fr.players[0]]} – {finalScores[fr.players[1]]}
+                  {finalScores[finalRound.players[0]]} – {finalScores[finalRound.players[1]]}
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 700 }}>{fr.players[1]}</div>
+                  <div style={{ fontWeight: 700 }}>{finalRound.players[1]}</div>
                   <div style={{ fontSize: '.8rem', display: 'flex', gap: '3px', marginTop: '.3rem', justifyContent: 'flex-end' }}>
-                    {fr.scores[fr.players[1]].map((r, i) => (
+                    {finalRound.scores[finalRound.players[1]].map((r, i) => (
                       <div key={i} style={{ width: '12px', height: '12px', borderRadius: '50%', background: r ? 'var(--green)' : 'var(--red)' }} />
                     ))}
                   </div>
@@ -96,7 +95,7 @@ export default function GameOverScreen({ gameState, onMenu }) {
               <tbody>
                 {allPlayers.map(p => {
                   const st = playerStats(p)
-                  const isElim = gs.eliminated.includes(p)
+                  const isElim = gameState.eliminated.includes(p)
                   return (
                     <tr key={p}>
                       <td style={{ fontWeight: 700 }}>{p}</td>
@@ -119,7 +118,7 @@ export default function GameOverScreen({ gameState, onMenu }) {
               <table className="stats-table">
                 <thead><tr><th>Rnd</th><th>Player</th><th>Question</th><th>Answer</th><th>Result</th></tr></thead>
                 <tbody>
-                  {gs.history.map((h, i) => (
+                  {gameState.history.map((h, i) => (
                     <tr key={i}>
                       <td style={{ color: 'var(--text-muted)' }}>{h.round}</td>
                       <td style={{ fontWeight: 700 }}>{h.player}</td>

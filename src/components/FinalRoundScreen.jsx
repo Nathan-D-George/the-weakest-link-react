@@ -4,58 +4,57 @@ import OptionsModal from './OptionsModal'
 const MIN_SETS = 5  // each player must answer at least 5 questions
 
 export default function FinalRoundScreen({ gameState, setGameState, settings, onGameOver, onQuit }) {
-  const gs = gameState
-  const fr = gs.finalRound
-  const timerRef = useRef(null)
+  const finalRound = gameState.finalRound;
+  const timerRef = useRef(null);
 
-  const [revealAnswer, setRevealAnswer] = useState(false)
-  const [answered, setAnswered] = useState(null)          // null | true | false
-  const [setResult, setSetResult] = useState(null)         // result summary after each set
-  const [showOptions, setShowOptions] = useState(false)
+  const [revealAnswer, setRevealAnswer] = useState(false);
+  const [answered, setAnswered] = useState(null);
+  const [setResult, setSetResult] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
 
-  const questionsExhausted = gs.questionIndex >= gs.totalQuestions
-  const currentQ = questionsExhausted ? null : gs.questionQueue[gs.questionIndex]
+  const questionsExhausted = gameState.questionIndex >= gameState.totalQuestions;
+  const currentQuestion = questionsExhausted ? null : gameState.questionQueue[gameState.questionIndex];
 
   // Who is currently answering
-  const currentPlayer = fr.players[fr.currentPlayerIndex]
-  const otherPlayer   = fr.players[1 - fr.currentPlayerIndex]
+  const currentPlayer = finalRound.players[finalRound.currentPlayerIndex];
+  const otherPlayer   = finalRound.players[1 - finalRound.currentPlayerIndex];
 
   // Scores in THIS final round
-  const p0scores = fr.scores[fr.players[0]]  // array of true/false per set
-  const p1scores = fr.scores[fr.players[1]]
+  const p0scores = finalRound.scores[finalRound.players[0]];  // array of true/false per set
+  const p1scores = finalRound.scores[finalRound.players[1]];
 
-  const p0correct = p0scores.filter(Boolean).length
-  const p1correct = p1scores.filter(Boolean).length
+  const p0correct = p0scores.filter(Boolean).length;
+  const p1correct = p1scores.filter(Boolean).length;
 
-  const showAnswerInBox = settings.autoDisplayAnswer || revealAnswer
+  const showAnswerInBox = settings.autoDisplayAnswer || revealAnswer;
 
   // Reset UI on question change
   useEffect(() => {
-    setRevealAnswer(false)
-    setAnswered(null)
-    setSetResult(null)
-  }, [gs.questionIndex, fr.currentPlayerIndex, fr.set])
+    setRevealAnswer(false);
+    setAnswered(null);
+    setSetResult(null);
+  }, [gameState.questionIndex, finalRound.currentPlayerIndex, finalRound.set]);
 
   const handleAnswer = (correct) => {
-    clearInterval(timerRef.current)
-    setRevealAnswer(true)
-    setAnswered(correct)
+    clearInterval(timerRef.current);
+    setRevealAnswer(true);
+    setAnswered(correct);
 
     const newHistory = [
-      ...gs.history,
+      ...gameState.history,
       {
         player: currentPlayer,
-        question: currentQ.question,
-        answer: currentQ.answer,
+        question: currentQuestion.question,
+        answer: currentQuestion.answer,
         correct,
-        round: `Final S${fr.set}`,
+        round: `Final S${finalRound.set}`,
       },
-    ]
+    ];
 
     // Record this answer in finalRound scores
     const newScores = {
-      ...fr.scores,
-      [currentPlayer]: [...fr.scores[currentPlayer], correct],
+      ...finalRound.scores,
+      [currentPlayer]: [...finalRound.scores[currentPlayer], correct],
     }
 
     setGameState(prev => ({
@@ -67,64 +66,64 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
   }
 
   const handleNext = () => {
-    const newP0scores = fr.scores[fr.players[0]]
-    const newP1scores = fr.scores[fr.players[1]]
+    const newP0scores = finalRound.scores[finalRound.players[0]];
+    const newP1scores = finalRound.scores[finalRound.players[1]];
 
     // Is this the end of a set? (both players have answered `set` times)
-    const setComplete = newP0scores.length === fr.set && newP1scores.length === fr.set
+    const setComplete = newP0scores.length === finalRound.set && newP1scores.length === finalRound.set;
 
     if (setComplete) {
-      const p0c = newP0scores.filter(Boolean).length
-      const p1c = newP1scores.filter(Boolean).length
-      const inSuddenDeath = fr.set >= MIN_SETS
+      const p0c = newP0scores.filter(Boolean).length;
+      const p1c = newP1scores.filter(Boolean).length;
+      const inSuddenDeath = finalRound.set >= MIN_SETS;
 
       // After MIN_SETS, check for clear winner each set
-      if (inSuddenDeath || fr.set >= MIN_SETS) {
+      if (inSuddenDeath || finalRound.set >= MIN_SETS) {
         // Sudden death: one correct, other not → clear winner
-        const lastP0 = newP0scores[newP0scores.length - 1]
-        const lastP1 = newP1scores[newP1scores.length - 1]
+        const lastP0 = newP0scores[newP0scores.length - 1];
+        const lastP1 = newP1scores[newP1scores.length - 1];
 
         if (inSuddenDeath && lastP0 !== lastP1) {
           // One won, one didn't — game over
-          const winnerIdx = lastP0 ? 0 : 1
-          const winner = fr.players[winnerIdx]
+          const winnerIndex = lastP0 ? 0 : 1;
+          const winner = finalRound.players[winnerIndex];
           setGameState(prev => ({
             ...prev,
             players: [winner],
-            eliminated: [...prev.eliminated, fr.players[1 - winnerIdx]],
+            eliminated: [...prev.eliminated, finalRound.players[1 - winnerIndex]],
             finalRound: { ...prev.finalRound, winner, phase: 'done' },
-          }))
-          onGameOver()
-          return
+          }));
+          onGameOver();
+          return;
         }
 
         // After min sets, check if overall score is decisive
         if (!inSuddenDeath && p0c !== p1c) {
-          const winnerIdx = p0c > p1c ? 0 : 1
-          const winner = fr.players[winnerIdx]
+          const winnerIndex = p0c > p1c ? 0 : 1;
+          const winner = finalRound.players[winnerIndex];
           setGameState(prev => ({
             ...prev,
             players: [winner],
-            eliminated: [...prev.eliminated, fr.players[1 - winnerIdx]],
+            eliminated: [...prev.eliminated, finalRound.players[1 - winnerIndex]],
             finalRound: { ...prev.finalRound, winner, phase: 'done' },
-          }))
-          onGameOver()
-          return
+          }));
+          onGameOver();
+          return;
         }
       }
 
       // Show set summary if tied (or still in first 5 sets)
-      const nextSet = fr.set + 1
-      const isTied = p0c === p1c
-      const justFinishedMin = fr.set === MIN_SETS
+      const nextSet = finalRound.set + 1;
+      const isTied = p0c === p1c;
+      const justFinishedMin = finalRound.set === MIN_SETS;
 
       setSetResult({
-        set: fr.set,
-        p0: { name: fr.players[0], score: p0c, last: newP0scores[newP0scores.length - 1] },
-        p1: { name: fr.players[1], score: p1c, last: newP1scores[newP1scores.length - 1] },
+        set: finalRound.set,
+        p0: { name: finalRound.players[0], score: p0c, last: newP0scores[newP0scores.length - 1] },
+        p1: { name: finalRound.players[1], score: p1c, last: newP1scores[newP1scores.length - 1] },
         tied: isTied,
         enteringSuddenDeath: justFinishedMin && isTied,
-      })
+      });
 
       setGameState(prev => ({
         ...prev,
@@ -133,8 +132,8 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
           set: nextSet,
           currentPlayerIndex: 0,  // player 0 always starts each set
         },
-      }))
-      return
+      }));
+      return;
     }
 
     // Mid-set: switch to the other player
@@ -144,22 +143,22 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
         ...prev.finalRound,
         currentPlayerIndex: 1 - prev.finalRound.currentPlayerIndex,
       },
-    }))
+    }));
   }
 
   // After set result is acknowledged
   const dismissSetResult = () => {
-    setSetResult(null)
-    setAnswered(null)
-    setRevealAnswer(false)
+    setSetResult(null);
+    setAnswered(null);
+    setRevealAnswer(false);
   }
 
-  const setLabel = fr.set > MIN_SETS
-    ? `Sudden Death — Set ${fr.set - MIN_SETS}`
-    : `Set ${fr.set} of ${MIN_SETS}`
+  const setLabel = finalRound.set > MIN_SETS
+    ? `Sudden Death — Set ${finalRound.set - MIN_SETS}`
+    : `Set ${finalRound.set} of ${MIN_SETS}`;
 
-  const p0name = fr.players[0]
-  const p1name = fr.players[1]
+  const p0name = finalRound.players[0];
+  const p1name = finalRound.players[1];
 
   return (
     <div className="screen" style={{ justifyContent: 'flex-start', paddingTop: '2rem' }}>
@@ -180,7 +179,7 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '.7rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '.2rem' }}>Banked</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--gold)' }}>{gs.bankTotal}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--gold)' }}>{gameState.bankTotal}</div>
           </div>
         </div>
 
@@ -189,10 +188,10 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
         {/* Scoreboard */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
           {[0, 1].map(i => {
-            const pname = fr.players[i]
-            const pscores = fr.scores[pname]
+            const pname = finalRound.players[i]
+            const pscores = finalRound.scores[pname]
             const pcorrect = pscores.filter(Boolean).length
-            const isCurrent = fr.currentPlayerIndex === i
+            const isCurrent = finalRound.currentPlayerIndex === i
             return (
               <div key={pname} style={{
                 background: isCurrent ? 'rgba(26,74,204,0.15)' : 'var(--surface)',
@@ -229,18 +228,18 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
         )}
 
         {/* Question box */}
-        {!questionsExhausted && currentQ && answered === null && !setResult && (
+        {!questionsExhausted && currentQuestion && answered === null && !setResult && (
           <>
             <div className="q-box">
               <div style={{ fontSize: '.7rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '.8rem' }}>
-                <span style={{ color: 'var(--gold)' }}>⚡ Final</span> &nbsp;·&nbsp; {gs.questionIndex + 1} of {gs.totalQuestions} total
+                <span style={{ color: 'var(--gold)' }}>⚡ Final</span> &nbsp;·&nbsp; {gameState.questionIndex + 1} of {gameState.totalQuestions} total
               </div>
-              <div className="q-text">{currentQ.question}</div>
+              <div className="q-text">{currentQuestion.question}</div>
               {showAnswerInBox && (
                 <>
                   <div style={{ height: '1px', background: 'var(--border)', margin: '.8rem 0' }} />
                   <div style={{ fontSize: '.7rem', letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '.3rem' }}>Answer</div>
-                  <div className="a-text">{currentQ.answer}</div>
+                  <div className="a-text">{currentQuestion.answer}</div>
                 </>
               )}
             </div>
@@ -261,13 +260,13 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
           <>
             <div className="q-box" style={{ marginTop: '1rem' }}>
               <div style={{ fontSize: '.7rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '.8rem' }}>
-                <span style={{ color: 'var(--gold)' }}>⚡ Final</span> &nbsp;·&nbsp; {gs.questionIndex} of {gs.totalQuestions} total
+                <span style={{ color: 'var(--gold)' }}>⚡ Final</span> &nbsp;·&nbsp; {gameState.questionIndex} of {gameState.totalQuestions} total
               </div>
-              <div className="q-text" style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>{gs.questionQueue[gs.questionIndex - 1]?.question}</div>
+              <div className="q-text" style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>{gameState.questionQueue[gameState.questionIndex - 1]?.question}</div>
               {(settings.autoDisplayAnswer || revealAnswer) && (
                 <>
                   <div style={{ height: '1px', background: 'var(--border)', margin: '.8rem 0' }} />
-                  <div className="a-text">{gs.questionQueue[gs.questionIndex - 1]?.answer}</div>
+                  <div className="a-text">{gameState.questionQueue[gameState.questionIndex - 1]?.answer}</div>
                 </>
               )}
             </div>
@@ -276,7 +275,7 @@ export default function FinalRoundScreen({ gameState, setGameState, settings, on
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
               <button className="btn btn-primary" onClick={handleNext}>
-                {fr.scores[fr.players[0]].length === fr.set && fr.scores[fr.players[1]].length < fr.set
+                {finalRound.scores[finalRound.players[0]].length === finalRound.set && finalRound.scores[finalRound.players[1]].length < finalRound.set
                   ? `${otherPlayer}'s turn →`
                   : 'Next →'}
               </button>
