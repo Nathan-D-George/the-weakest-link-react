@@ -3,6 +3,6 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // base: '/the-weakest-link-react/',
+  base: '/the-weakest-link-react/',
   plugins: [react()],
 })
